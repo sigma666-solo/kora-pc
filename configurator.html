@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC Builder - Configurator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body id="configurator-page">
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo">
+                <span class="logo-icon">⚙️</span>
+                <span class="logo-text">PC Builder</span>
+            </div>
+            <h1 class="header-title">Build Your PC</h1>
+            <a href="index.html" class="btn btn-secondary">← Back to Home</a>
+        </div>
+    </header>
+
+    <main class="configurator-main">
+        <div class="container-flex">
+            <!-- LEFT PANEL - Current Build -->
+            <aside class="left-panel">
+                <div class="build-summary">
+                    <h2>Your Build</h2>
+
+                    <!-- Progress Bar -->
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span id="progress-count">0/8</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Build Components -->
+                    <div class="components-list" id="components-list">
+                        <!-- Dynamically generated -->
+                    </div>
+
+                    <!-- Total Price -->
+                    <div class="total-price">
+                        <span>Total Price:</span>
+                        <span class="price" id="total-price">$0</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button class="btn btn-success" id="save-build-btn">Save Build</button>
+                        <button class="btn btn-info" id="load-build-btn">Load Build</button>
+                        <button class="btn btn-danger" id="clear-build-btn">Clear</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- RIGHT PANEL - Catalog -->
+            <section class="right-panel">
+                <!-- Search -->
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search components..." class="search-input">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <!-- Filters & Sort -->
+                <div class="filters-sort">
+                    <div class="filter-group">
+                        <label for="category-filter">Category:</label>
+                        <select id="category-filter" class="filter-select">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="price-filter">Price Range:</label>
+                        <select id="price-filter" class="filter-select">
+                            <option value="">All Prices</option>
+                            <option value="0-200">$0 - $200</option>
+                            <option value="200-500">$200 - $500</option>
+                            <option value="500-1000">$500 - $1000</option>
+                            <option value="1000+">$1000+</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="sort-select">Sort By:</label>
+                        <select id="sort-select" class="filter-select">
+                            <option value="name-asc">Name (A-Z)</option>
+                            <option value="name-desc">Name (Z-A)</option>
+                            <option value="price-asc">Price (Low to High)</option>
+                            <option value="price-desc">Price (High to Low)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Components Grid -->
+                <div class="components-grid" id="components-grid">
+                    <!-- Dynamically generated -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- MODAL: Save Build -->
+    <div class="modal" id="save-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Save Your Build</h2>
+                <span class="modal-close" data-modal="save-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="build-name-input" placeholder="Enter build name..." class="modal-input">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal="save-modal">Cancel</button>
+                <button class="btn btn-success" id="confirm-save-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Load Build -->
+    <div class="modal" id="load-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Load Your Builds</h2>
+                <span class="modal-close" data-modal="load-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="builds-list" id="builds-list">
+                    <!-- Dynamically generated -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal="load-modal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 PC Builder. All rights reserved.</p>
+            <p>Contact: info@pcbuilder.com</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
