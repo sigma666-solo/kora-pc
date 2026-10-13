@@ -107,6 +107,11 @@ KB.bindEvents = function () {
         KB.renderProducts();
     });
 
+    $("#form-image").on("change", function () {
+        const file = this.files && this.files[0];
+        KB.readImageFile(file);
+    });
+
     /* --- input: фильтр по цене --- */
     $("#filter-price-min").on("input", function () {
         KB.applyPriceFilters();
@@ -130,6 +135,8 @@ KB.bindEvents = function () {
 
     /* --- submit: форма товара --- */
     $("#product-form").on("submit", KB.handleProductFormSubmit);
+
+    $("#form-category").on("change", KB.updateProductFormHints);
 };
 
 /* Запускает приложение после загрузки DOM. */

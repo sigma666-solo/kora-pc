@@ -25,7 +25,7 @@ KB.buildSeedProducts = function () {
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
-            list.push({
+            const product = {
                 id: id,
                 name: row[0],
                 categoryId: categoryId,
@@ -34,12 +34,32 @@ KB.buildSeedProducts = function () {
                 description: row[3],
                 inStock: row[4],
                 image: row[5] || null
-            });
+            };
+
+            KB.enrichProductCompatibility(product);
+            list.push(product);
             id += 1;
         }
     }
 
     return list;
+};
+
+/* Добавляет к товару свойства совместимости, если они есть в профиле. */
+KB.enrichProductCompatibility = function (product) {
+    if (!product || !product.name) {
+        return product;
+    }
+
+    const profile = KB.getCompatibilityProfile(product);
+
+    Object.keys(profile).forEach(function (key) {
+        if (product[key] === undefined) {
+            product[key] = profile[key];
+        }
+    });
+
+    return product;
 };
 
 /* Сохраняет товары и категории (вместе с выбранными слотами). */
@@ -119,6 +139,8 @@ KB.repairData = function () {
         if (!product.image && seedImages[product.name]) {
             product.image = seedImages[product.name];
         }
+
+        KB.enrichProductCompatibility(product);
     });
 
     /* Если выбранный товар удалён из каталога — очищаем слот. */

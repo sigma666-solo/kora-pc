@@ -38,10 +38,108 @@ KB.searchProducts = function (query) {
 };
 
 /* Фильтрация по наличию и диапазону цены. */
+KB.asArray = function (value) {
+    if (value === undefined || value === null) {
+        return [];
+    }
+    return Array.isArray(value) ? value : [value];
+};
+
+KB.getSelectedBuildMap = function () {
+    const selected = {};
+
+    KB.state.categories.forEach(function (category) {
+        const product = KB.getSelectedProduct(category);
+
+        if (product) {
+            selected[category.id] = product;
+        }
+    });
+
+    return selected;
+};
+
+KB.isProductCompatibleWithCurrentBuild = function (product) {
+    if (!product) {
+        return false;
+    }
+
+    const selected = KB.getSelectedBuildMap();
+    const activeCategory = KB.findCategory(KB.state.activeCategoryId);
+
+    if (activeCategory && activeCategory.selectedProductId === product.id) {
+        return true;
+    }
+
+    const cpu = selected[1];
+    const cooler = selected[2];
+    const motherboard = selected[3];
+    const memory = selected[4];
+    const gpu = selected[6];
+    const caseProduct = selected[7];
+    const psu = selected[8];
+
+    if (product.categoryId === 1) {
+        if (motherboard && product.socket !== motherboard.socket) {
+            return false;
+        }
+        if (cooler && !KB.asArray(cooler.supportedSockets).includes(product.socket)) {
+            return false;
+        }
+    }
+
+    if (product.categoryId === 2) {
+        const supportedSockets = KB.asArray(product.supportedSockets);
+        if (cpu && !supportedSockets.includes(cpu.socket)) {
+            return false;
+        }
+        if (motherboard && !supportedSockets.includes(motherboard.socket)) {
+            return false;
+        }
+    }
+
+    if (product.categoryId === 3) {
+        if (cpu && product.socket !== cpu.socket) {
+            return false;
+        }
+        if (memory && product.memoryType && memory.memoryType && product.memoryType !== memory.memoryType) {
+            return false;
+        }
+        if (cooler && !KB.asArray(cooler.supportedSockets).includes(product.socket)) {
+            return false;
+        }
+        if (caseProduct && product.formFactor && !KB.asArray(caseProduct.supportedFormFactors).includes(product.formFactor)) {
+            return false;
+        }
+    }
+
+    if (product.categoryId === 4 && motherboard && product.memoryType && motherboard.memoryType && product.memoryType !== motherboard.memoryType) {
+        return false;
+    }
+
+    if (product.categoryId === 6 && psu && product.recommendedPsuWattage && psu.wattage < product.recommendedPsuWattage) {
+        return false;
+    }
+
+    if (product.categoryId === 7 && motherboard && product.supportedFormFactors && !KB.asArray(product.supportedFormFactors).includes(motherboard.formFactor)) {
+        return false;
+    }
+
+    if (product.categoryId === 8 && gpu && gpu.recommendedPsuWattage && product.wattage < gpu.recommendedPsuWattage) {
+        return false;
+    }
+
+    return true;
+};
+
 KB.filterProducts = function (productList) {
     const filters = KB.state.activeFilters;
 
     return productList.filter(function (product) {
+        if (!KB.isProductCompatibleWithCurrentBuild(product)) {
+            return false;
+        }
+
         if (filters.stock === "in" && product.inStock !== true) {
             return false;
         }
@@ -163,6 +261,10 @@ KB.validateProductForm = function (productData) {
         errors.push("Укажите название товара.");
     }
 
+    if (productData.categoryId === null || productData.categoryId === undefined || productData.categoryId === "" || KB.findCategory(productData.categoryId) === undefined) {
+        errors.push("Выберите категорию товара.");
+    }
+
     if (
         typeof productData.price !== "number" ||
         isNaN(productData.price) ||
@@ -171,15 +273,53 @@ KB.validateProductForm = function (productData) {
         errors.push("Цена должна быть числом больше нуля.");
     }
 
-    if (KB.findCategory(productData.categoryId) === undefined) {
-        errors.push("Выберите существующую категорию.");
+    if (!productData.brand || String(productData.brand).trim() === "") {
+        errors.push("Укажите производителя.");
     }
 
-    if (productData.brand !== undefined && typeof productData.brand !== "string") {
-        errors.push("Производитель указан неверно.");
+    if (!productData.description || String(productData.description).trim() === "") {
+        errors.push("Добавьте описание и основные характеристики товара.");
     }
+
+    const compatibilityFields = KB.COMPATIBILITY_FIELDS[Number(productData.categoryId)] || [];
+    compatibilityFields.forEach(function (field) {
+        const value = productData[field.key];
+        let valid = value !== null && value !== undefined && value !== "";
+
+        if (field.type === "checkboxes") {
+            valid = Array.isArray(value) && value.length > 0 && value.every(function (option) {
+                return field.options.includes(option);
+            });
+        } else if (field.type === "select") {
+            valid = field.options.includes(value);
+        } else if (field.type === "number") {
+            valid = typeof value === "number" && isFinite(value) && value >= field.min;
+        }
+
+        if (!valid) {
+            errors.push("Заполните параметр совместимости: " + field.label + ".");
+        }
+    });
 
     return { valid: errors.length === 0, errors: errors };
+};
+
+/* Переносит только параметры совместимости текущей категории в товар. */
+KB.applyCompatibilityFields = function (product, categoryId, source) {
+    const values = {};
+    (KB.COMPATIBILITY_FIELDS[categoryId] || []).forEach(function (field) {
+        values[field.key] = source[field.key];
+    });
+
+    Object.keys(KB.COMPATIBILITY_FIELDS).forEach(function (id) {
+        KB.COMPATIBILITY_FIELDS[id].forEach(function (field) {
+            delete product[field.key];
+        });
+    });
+
+    (KB.COMPATIBILITY_FIELDS[categoryId] || []).forEach(function (field) {
+        product[field.key] = values[field.key];
+    });
 };
 
 /* Добавляет товар в каталог. Возвращает true/false. */
@@ -206,9 +346,11 @@ KB.addProduct = function (productData) {
         price: Number(productData.price),
         brand: String(productData.brand || "").trim(),
         description: String(productData.description || "").trim(),
-        inStock: productData.inStock === true
+        inStock: productData.inStock === true,
+        image: productData.image || null
     };
 
+    KB.applyCompatibilityFields(product, product.categoryId, productData);
     KB.state.products.push(product);
     KB.saveData();
     KB.renderProducts();
@@ -275,6 +417,8 @@ KB.updateProduct = function (productId, updatedData) {
     product.brand = String(updatedData.brand || "").trim();
     product.description = String(updatedData.description || "").trim();
     product.inStock = updatedData.inStock === true;
+    product.image = updatedData.image || null;
+    KB.applyCompatibilityFields(product, product.categoryId, updatedData);
 
     /* Товар переехал в другую категорию — чистим старый слот. */
     if (oldCategoryId !== product.categoryId) {
@@ -337,6 +481,11 @@ KB.selectProduct = function (productId) {
         return;
     }
 
+    if (!KB.isProductCompatibleWithCurrentBuild(product)) {
+        KB.showMessage("Этот товар несовместим с уже выбранными комплектующими", "error");
+        return;
+    }
+
     const category = KB.findCategory(product.categoryId);
 
     if (category === undefined) {
@@ -352,6 +501,7 @@ KB.selectProduct = function (productId) {
     KB.updateProgress();
     KB.updateCounters();
     KB.updateSelectedCardStates();
+    KB.renderProducts();
     KB.showMessage("Товар \u00AB" + product.name + "\u00BB добавлен в сборку", "success");
 };
 

@@ -1019,17 +1019,9 @@ main {
     color: var(--text-muted);
 }
 
-/* Описание товара: по умолчанию скрыто — карточка остаётся компактной.
-   Раскрывается и подсвечивается, когда активен поиск. */
+/* Описание товара всегда видно, чтобы пользователь видел
+   полную характеристику товара даже без активного поиска. */
 .card-desc {
-    display: none;
-}
-
-.card-desc:empty {
-    display: none !important;
-}
-
-.product-grid.is-searching .card-desc {
     display: -webkit-box;
     overflow: hidden;
     padding: 0.4rem 0.5rem;
@@ -1041,6 +1033,13 @@ main {
     border-radius: 4px;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+}
+
+.card-desc:empty {
+    display: none !important;
+}
+
+.product-grid.is-searching .card-desc {
     animation: card-desc-in 0.25s ease;
 }
 
@@ -1309,6 +1308,28 @@ main {
     outline: none;
     border-color: var(--copper);
     box-shadow: 0 0 0 3px rgba(184, 115, 51, 0.22);
+}
+
+.compatibility-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 0.9rem;
+    padding: 0.55rem 0.7rem;
+    background: var(--graphite-700);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.compatibility-options label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--off-white);
+    cursor: pointer;
+}
+
+.compatibility-options input {
+    accent-color: var(--copper-light);
 }
 
 .form-field.checkbox {

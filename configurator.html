@@ -131,23 +131,28 @@
                     <div class="form-grid">
                         <div class="form-field full">
                             <label for="form-name">Название</label>
-                            <input type="text" id="form-name" class="form-control" autocomplete="off">
+                            <input type="text" id="form-name" class="form-control" autocomplete="off" placeholder="Например: AMD Ryzen 5 5600" required>
                         </div>
                         <div class="form-field">
                             <label for="form-category">Категория</label>
-                            <select id="form-category" class="form-control"></select>
+                            <select id="form-category" class="form-control" required></select>
                         </div>
                         <div class="form-field">
                             <label for="form-price">Цена (₽)</label>
-                            <input type="number" id="form-price" class="form-control" min="0" step="1">
+                            <input type="number" id="form-price" class="form-control" min="0.01" step="1" placeholder="Например: 12900" required>
                         </div>
                         <div class="form-field full">
                             <label for="form-brand">Производитель</label>
-                            <input type="text" id="form-brand" class="form-control" autocomplete="off">
+                            <input type="text" id="form-brand" class="form-control" autocomplete="off" placeholder="Например: AMD" required>
                         </div>
                         <div class="form-field full">
                             <label for="form-description">Описание</label>
-                            <textarea id="form-description" class="form-control" rows="3"></textarea>
+                            <textarea id="form-description" class="form-control" rows="3" placeholder="Например: 6 ядер / 12 потоков, сокет AM4" required></textarea>
+                        </div>
+                        <div id="compatibility-fields" class="form-grid full"></div>
+                        <div class="form-field full">
+                            <label for="form-image">Изображение товара (необязательно)</label>
+                            <input type="file" id="form-image" class="form-control" accept="image/*">
                         </div>
                         <div class="form-field checkbox full">
                             <label><input type="checkbox" id="form-instock"> В наличии</label>
